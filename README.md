@@ -6,6 +6,8 @@ This project is designed mainly for beginner and intermediate IIDX players who w
 
 *If you are not familiar with 3/4 split or 2/5 split playstyles, we recommend checking [iidx.org](https://iidx.org).*
 
+*This project was co-authored with OpenAI Codex.*
+
 ## Features
 
 - Search SP charts by scratch/key chord pattern.
@@ -22,6 +24,6 @@ This project is designed mainly for beginner and intermediate IIDX players who w
 
 ## Acknowledgements
 
-- [beatmaniaIIDX 譜面集](https://textage.cc/score/index.html)
+- [beatmania IIDX 譜面集](https://textage.cc/score/index.html)
 - [@NotesRadarBot](https://x.com/NotesRadarBot)
 - [iidx.org](https://iidx.org)
