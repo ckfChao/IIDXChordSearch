@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chord Search</title>
+    <link rel="stylesheet" href="./assets/styles.css?v=20260506-0134" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel search-panel" aria-labelledby="app-title">
+        <div class="masthead">
+          <div>
+            <p class="eyebrow">beatmania IIDX</p>
+            <h1 id="app-title">ChordSearch</h1>
+          </div>
+          <div class="masthead-actions">
+            <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Dark</button>
+            <div class="load-state" id="load-state">Loading chart data...</div>
+          </div>
+        </div>
+
+        <div class="pattern-controls">
+          <div class="pattern-actions">
+            <div class="side-switch" aria-label="Play side">
+              <button class="side-button active" type="button" data-side="1p" aria-pressed="true">1P</button>
+              <button class="side-button" type="button" data-side="2p" aria-pressed="false">2P</button>
+            </div>
+            <button class="clear-pattern-button" id="clear-pattern" type="button">Clear</button>
+          </div>
+
+          <div class="pattern-row side-1p" aria-label="Pattern selector">
+            <button class="lane scratch selected" type="button" data-lane="S" aria-pressed="true">
+              <span>S</span>
+            </button>
+            <button class="lane key white selected" type="button" data-lane="1" aria-pressed="true">
+              <span>1</span>
+            </button>
+            <button class="lane key blue" type="button" data-lane="2" aria-pressed="false">
+              <span>2</span>
+            </button>
+            <button class="lane key white selected" type="button" data-lane="3" aria-pressed="true">
+              <span>3</span>
+            </button>
+            <button class="lane key blue" type="button" data-lane="4" aria-pressed="false">
+              <span>4</span>
+            </button>
+            <button class="lane key white" type="button" data-lane="5" aria-pressed="false">
+              <span>5</span>
+            </button>
+            <button class="lane key blue" type="button" data-lane="6" aria-pressed="false">
+              <span>6</span>
+            </button>
+            <button class="lane key white" type="button" data-lane="7" aria-pressed="false">
+              <span>7</span>
+            </button>
+          </div>
+        </div>
+
+        <form class="filters" id="filters">
+          <label class="filter-block">
+            <span>Artist</span>
+            <input id="artist-filter" type="search" placeholder="D.J.Amuro" autocomplete="off" />
+          </label>
+
+          <fieldset class="filter-block difficulty-filter">
+            <span>Difficulty</span>
+            <div class="difficulty-options" aria-label="Difficulty">
+              <button class="difficulty-button diff-spn active" type="button" data-difficulty="NORMAL" aria-pressed="true">SPN</button>
+              <button class="difficulty-button diff-sph active" type="button" data-difficulty="HYPER" aria-pressed="true">SPH</button>
+              <button class="difficulty-button diff-spa active" type="button" data-difficulty="ANOTHER" aria-pressed="true">SPA</button>
+              <button class="difficulty-button diff-spl active" type="button" data-difficulty="LEGGENDARIA" aria-pressed="true">SPL</button>
+            </div>
+          </fieldset>
+
+          <label class="filter-block">
+            <span>Level</span>
+            <span class="range-inputs">
+              <input id="level-min" type="number" min="1" max="12" inputmode="numeric" placeholder="1" />
+              <span class="range-mark">~</span>
+              <input id="level-max" type="number" min="1" max="12" inputmode="numeric" placeholder="12" />
+            </span>
+          </label>
+
+          <label class="filter-block">
+            <span>BPM</span>
+            <span class="range-inputs">
+              <input id="bpm-min" type="number" min="0" inputmode="numeric" placeholder="0" />
+              <span class="range-mark">~</span>
+              <input id="bpm-max" type="number" min="0" inputmode="numeric" placeholder="260" />
+            </span>
+          </label>
+
+          <fieldset class="filter-block radar-filter">
+            <span>Radar</span>
+            <div class="radar-options" aria-label="Dominant radar attribute">
+              <button class="radar-button radar-notes active" type="button" data-radar="NOTES" aria-pressed="true">NOTES</button>
+              <button class="radar-button radar-peak active" type="button" data-radar="PEAK" aria-pressed="true">PEAK</button>
+              <button class="radar-button radar-scratch active" type="button" data-radar="SCRATCH" aria-pressed="true">SCRATCH</button>
+              <button class="radar-button radar-soflan active" type="button" data-radar="SOF-LAN" aria-pressed="true">SOF-LAN</button>
+              <button class="radar-button radar-charge active" type="button" data-radar="CHARGE" aria-pressed="true">CHARGE</button>
+              <button class="radar-button radar-chord active" type="button" data-radar="CHORD" aria-pressed="true">CHORD</button>
+            </div>
+          </fieldset>
+        </form>
+      </section>
+
+      <section class="results-panel" aria-label="Results">
+        <div class="results-head">
+          <div>
+            <p class="eyebrow">Results</p>
+          </div>
+          <div class="results-tools">
+            <label class="limit-control">
+              <span>Show</span>
+              <select id="result-limit">
+                <option value="25">25</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+                <option value="all">All</option>
+              </select>
+            </label>
+            <button
+              class="sort-button"
+              id="sort-toggle"
+              type="button"
+              aria-label="Sort count high to low"
+              title="Sort count high to low"
+            >
+              <span class="sort-icon" aria-hidden="true">↓</span>
+            </button>
+            <div class="result-count" id="result-count">0 charts</div>
+          </div>
+        </div>
+        <div class="results" id="results"></div>
+      </section>
+    </main>
+
+    <button class="top-button" id="top-button" type="button" aria-label="Go to top">↑</button>
+
+    <script src="./assets/app.js?v=20260506-0134"></script>
+  </body>
+</html>
