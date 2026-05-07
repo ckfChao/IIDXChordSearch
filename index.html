@@ -27,7 +27,7 @@
     />
     <meta name="twitter:image" content="https://ckfchao.github.io/IIDXChordSearch/assets/preview.png" />
     <meta name="theme-color" content="#f5f1e8" />
-    <link rel="stylesheet" href="./assets/styles.css?v=20260506-0134" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20260507-help-key" />
   </head>
   <body>
     <main class="shell">
@@ -38,6 +38,7 @@
             <h1 id="app-title">ChordSearch</h1>
           </div>
           <div class="masthead-actions">
+            <button class="help-button" id="helpBtn" type="button">❔ How to use</button>
             <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Dark</button>
             <div class="load-state" id="load-state">Loading chart data...</div>
           </div>
@@ -49,32 +50,32 @@
               <button class="side-button active" type="button" data-side="1p" aria-pressed="true">1P</button>
               <button class="side-button" type="button" data-side="2p" aria-pressed="false">2P</button>
             </div>
-            <button class="clear-pattern-button" id="clear-pattern" type="button">Clear</button>
+            <button class="clear-pattern-button" id="clear-pattern" type="button">Clear keys</button>
           </div>
 
           <div class="pattern-row side-1p" aria-label="Pattern selector">
-            <button class="lane scratch selected" type="button" data-lane="S" aria-pressed="true">
+            <button class="lane scratch selected required" type="button" data-lane="S" data-state="required" aria-pressed="true" aria-label="S required">
               <span>S</span>
             </button>
-            <button class="lane key white selected" type="button" data-lane="1" aria-pressed="true">
+            <button class="lane key white selected required" type="button" data-lane="1" data-state="required" aria-pressed="true" aria-label="1 required">
               <span>1</span>
             </button>
-            <button class="lane key blue" type="button" data-lane="2" aria-pressed="false">
+            <button class="lane key blue" type="button" data-lane="2" data-state="off" aria-pressed="false" aria-label="2 off">
               <span>2</span>
             </button>
-            <button class="lane key white selected" type="button" data-lane="3" aria-pressed="true">
+            <button class="lane key white selected required" type="button" data-lane="3" data-state="required" aria-pressed="true" aria-label="3 required">
               <span>3</span>
             </button>
-            <button class="lane key blue" type="button" data-lane="4" aria-pressed="false">
+            <button class="lane key blue" type="button" data-lane="4" data-state="off" aria-pressed="false" aria-label="4 off">
               <span>4</span>
             </button>
-            <button class="lane key white" type="button" data-lane="5" aria-pressed="false">
+            <button class="lane key white" type="button" data-lane="5" data-state="off" aria-pressed="false" aria-label="5 off">
               <span>5</span>
             </button>
-            <button class="lane key blue" type="button" data-lane="6" aria-pressed="false">
+            <button class="lane key blue" type="button" data-lane="6" data-state="off" aria-pressed="false" aria-label="6 off">
               <span>6</span>
             </button>
-            <button class="lane key white" type="button" data-lane="7" aria-pressed="false">
+            <button class="lane key white" type="button" data-lane="7" data-state="off" aria-pressed="false" aria-label="7 off">
               <span>7</span>
             </button>
           </div>
@@ -161,6 +162,42 @@
 
     <button class="top-button" id="top-button" type="button" aria-label="Go to top">↑</button>
 
-    <script src="./assets/app.js?v=20260507-url-base"></script>
+    <div class="help-overlay" id="help-overlay" hidden>
+      <section
+        class="help-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-title"
+        tabindex="-1"
+      >
+        <div class="help-head">
+          <h2 id="help-title">How to use</h2>
+          <button class="help-close" id="help-close" type="button" aria-label="Close help">×</button>
+        </div>
+        <div class="help-body">
+          <p>Choose a chord pattern with the scratch and seven keys, then narrow the results with difficulty, level, BPM, artist, and radar filters.</p>
+          <div class="help-key-guide" aria-label="Pattern key states">
+            <div class="help-key-row">
+              <span class="help-key-sample help-key-off" aria-hidden="true"><span>1</span></span>
+              <span><strong>No key</strong>: the chord must not include that key.</span>
+            </div>
+            <div class="help-key-row">
+              <span class="help-key-sample help-key-solid" aria-hidden="true"><span>1</span></span>
+              <span><strong>Solid key</strong>: the chord must include that key.</span>
+            </div>
+            <div class="help-key-row">
+              <span class="help-key-sample help-key-any" aria-hidden="true"><span>1</span></span>
+              <span><strong>Transparent key</strong>: the key is optional and can be present or absent.</span>
+            </div>
+          </div>
+          <p>Click each key to cycle through No key, Solid key, and Transparent key. For example, solid <strong>S12</strong> with transparent <strong>3</strong> searches both <strong>S12</strong> and <strong>S123</strong>.</p>
+          <p><strong>1P / 2P</strong> chooses which side you play on.</p>
+          <p><strong>Radar</strong> shows each chart's strongest radar type. Turn off a radar button, like <strong>SCRATCH</strong> or <strong>SOF-LAN</strong>, to hide charts dominated by that type.</p>
+          <p><strong>Count</strong> shows how many times the selected pattern appears in the chart.</p>
+        </div>
+      </section>
+    </div>
+
+    <script src="./assets/app.js?v=20260507-help"></script>
   </body>
 </html>

@@ -5,7 +5,8 @@ const DATA_URLS = {
 const TEXTAGE_SCORE_BASE_URL = "https://textage.cc/score/";
 
 const PATTERN_ORDER = ["S", "1", "2", "3", "4", "5", "6", "7"];
-const DEFAULT_PATTERN = new Set(["S", "1", "3"]);
+const ALL_PATTERNS = buildAllPatterns(PATTERN_ORDER);
+const DEFAULT_REQUIRED_KEYS = new Set(["S", "1", "3"]);
 const RADAR_ATTRIBUTES = [
   { key: "NOTES", color: "rgb(255, 64, 235)" },
   { key: "PEAK", color: "rgb(255, 108, 0)" },
@@ -18,7 +19,8 @@ const RADAR_MAX_VALUE = 200;
 
 const state = {
   charts: [],
-  selected: new Set(DEFAULT_PATTERN),
+  requiredKeys: new Set(DEFAULT_REQUIRED_KEYS),
+  anyKeys: new Set(),
   side: "1p",
   sortMode: "count-desc",
   loaded: false,
@@ -27,6 +29,10 @@ const state = {
 
 const elements = {
   loadState: document.querySelector("#load-state"),
+  helpBtn: document.querySelector("#helpBtn"),
+  helpOverlay: document.querySelector("#help-overlay"),
+  helpDialog: document.querySelector(".help-dialog"),
+  helpClose: document.querySelector("#help-close"),
   themeToggle: document.querySelector("#theme-toggle"),
   resultCount: document.querySelector("#result-count"),
   resultLimit: document.querySelector("#result-limit"),
@@ -82,6 +88,15 @@ async function init() {
 }
 
 function bindEvents() {
+  elements.helpBtn.addEventListener("click", openHelp);
+  elements.helpClose.addEventListener("click", closeHelp);
+  elements.helpOverlay.addEventListener("click", (event) => {
+    if (event.target === elements.helpOverlay) closeHelp();
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !elements.helpOverlay.hidden) closeHelp();
+  });
+
   elements.themeToggle.addEventListener("click", () => {
     const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
     applyTheme(nextTheme);
@@ -99,19 +114,15 @@ function bindEvents() {
 
   for (const lane of elements.lanes) {
     lane.addEventListener("click", () => {
-      const value = lane.dataset.lane;
-      if (state.selected.has(value)) {
-        state.selected.delete(value);
-      } else {
-        state.selected.add(value);
-      }
+      cyclePatternKey(lane.dataset.lane);
       syncPatternUI();
       scheduleUpdateResults();
     });
   }
 
   elements.clearPattern.addEventListener("click", () => {
-    state.selected.clear();
+    state.requiredKeys.clear();
+    state.anyKeys.clear();
     syncPatternUI();
     scheduleUpdateResults();
   });
@@ -149,6 +160,18 @@ function bindEvents() {
 
   window.addEventListener("scroll", syncTopButton, { passive: true });
   syncTopButton();
+}
+
+function openHelp() {
+  elements.helpOverlay.hidden = false;
+  document.body.classList.add("modal-open");
+  elements.helpDialog.focus();
+}
+
+function closeHelp() {
+  elements.helpOverlay.hidden = true;
+  document.body.classList.remove("modal-open");
+  elements.helpBtn.focus();
 }
 
 function syncTopButton() {
@@ -261,6 +284,18 @@ function parseCsv(text) {
     .map((items) => Object.fromEntries(headers.map((header, index) => [header, items[index] ?? ""])));
 }
 
+function buildAllPatterns(keys) {
+  const patterns = [];
+  const totalMasks = 2 ** keys.length;
+
+  for (let mask = 1; mask < totalMasks; mask += 1) {
+    const pattern = keys.filter((_, index) => mask & (1 << index)).join("");
+    patterns.push(pattern);
+  }
+
+  return patterns;
+}
+
 function joinCharts(metadataRows, countRows) {
   const countsById = new Map(countRows.map((row) => [String(row.id), normalizeCountRow(row)]));
   return metadataRows
@@ -351,40 +386,84 @@ function syncSideUI() {
 
 function syncPatternUI() {
   for (const lane of elements.lanes) {
-    const selected = state.selected.has(lane.dataset.lane);
-    lane.classList.toggle("selected", selected);
-    lane.setAttribute("aria-pressed", String(selected));
+    const laneValue = lane.dataset.lane;
+    const required = state.requiredKeys.has(laneValue);
+    const any = state.anyKeys.has(laneValue);
+    const stateLabel = required ? "required" : any ? "any" : "off";
+
+    lane.classList.toggle("selected", required);
+    lane.classList.toggle("required", required);
+    lane.classList.toggle("any", any);
+    lane.dataset.state = stateLabel;
+    lane.setAttribute("aria-pressed", required ? "true" : any ? "mixed" : "false");
+    lane.setAttribute("aria-label", `${laneValue} ${stateLabel}`);
   }
 }
 
-function getSearchPattern() {
-  return PATTERN_ORDER.filter((lane) => state.selected.has(lane)).join("");
+function cyclePatternKey(laneValue) {
+  if (state.requiredKeys.has(laneValue)) {
+    state.requiredKeys.delete(laneValue);
+    state.anyKeys.add(laneValue);
+    return;
+  }
+
+  if (state.anyKeys.has(laneValue)) {
+    state.anyKeys.delete(laneValue);
+    return;
+  }
+
+  state.requiredKeys.add(laneValue);
+}
+
+function hasActivePatternKeys() {
+  return state.requiredKeys.size > 0 || state.anyKeys.size > 0;
+}
+
+function getMatchingPatterns() {
+  return ALL_PATTERNS.filter((pattern) => patternMatchesSelector(pattern));
+}
+
+function patternMatchesSelector(pattern) {
+  for (const lane of PATTERN_ORDER) {
+    const hasLane = pattern.includes(lane);
+    if (state.requiredKeys.has(lane)) {
+      if (!hasLane) return false;
+    } else if (!state.anyKeys.has(lane) && hasLane) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function getDisplayPattern() {
   const order = state.side === "2p"
     ? ["1", "2", "3", "4", "5", "6", "7", "S"]
     : ["S", "1", "2", "3", "4", "5", "6", "7"];
-  return order.filter((lane) => state.selected.has(lane)).join("");
+  const required = order.filter((lane) => state.requiredKeys.has(lane)).join("");
+  const any = order.filter((lane) => state.anyKeys.has(lane)).join("");
+
+  if (required && any) return `${required} · any ${any}`;
+  if (required) return required;
+  return `any ${any}`;
 }
 
 function updateResults() {
   if (!state.loaded) return;
 
-  const pattern = getSearchPattern();
-  const displayPattern = getDisplayPattern();
-
-  if (!pattern) {
+  if (!hasActivePatternKeys()) {
     elements.resultCount.textContent = "0 charts";
     renderSelectPatternPrompt();
     return;
   }
 
+  const matchingPatterns = getMatchingPatterns();
+  const displayPattern = getDisplayPattern();
   const filters = readFilters();
   const matches = [];
 
   for (const chart of state.charts) {
-    const count = chart.counts[pattern] || 0;
+    const count = sumPatternCounts(chart.counts, matchingPatterns);
     if (count === 0 || !matchesFilters(chart, filters)) continue;
     matches.push({ chart, count });
   }
@@ -400,6 +479,14 @@ function renderSelectPatternPrompt() {
   elements.results.innerHTML = `
     <div class="empty">Select at least one key to search chord patterns.</div>
   `;
+}
+
+function sumPatternCounts(counts, patterns) {
+  let total = 0;
+  for (const pattern of patterns) {
+    total += counts[pattern] || 0;
+  }
+  return total;
 }
 
 function scheduleUpdateResults() {
