@@ -2,6 +2,7 @@ const DATA_URLS = {
   metadata: "./assets/song_data.jsonl",
   counts: "./assets/chord_count.csv",
 };
+const TEXTAGE_SCORE_BASE_URL = "https://textage.cc/score/";
 
 const PATTERN_ORDER = ["S", "1", "2", "3", "4", "5", "6", "7"];
 const DEFAULT_PATTERN = new Set(["S", "1", "3"]);
@@ -608,7 +609,8 @@ function roundSvg(value) {
 
 function urlForSide(url, side) {
   const sideNumber = side === "2p" ? "2" : "1";
-  return String(url || "").replace(/([?&])[12]([XAHNP])/i, `$1${sideNumber}$2`);
+  const sideUrl = String(url || "").replace(/([?&])[12]([XAHNP])/i, `$1${sideNumber}$2`);
+  return new URL(sideUrl, TEXTAGE_SCORE_BASE_URL).href;
 }
 
 function parseNumeric(value) {
